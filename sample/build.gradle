@@ -1,0 +1,45 @@
+apply plugin: 'com.android.application'
+apply from: '../dependencies.gradle'
+
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+
+    lintOptions {
+        abortOnError false
+    }
+    defaultConfig {
+        applicationId "com.afollestad.materialcamerasample"
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.compileSdk
+        versionCode versions.publishVersionCode
+        versionName versions.publishVersion
+        vectorDrawables.useSupportLibrary = true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    buildscript {
+        repositories {
+            jcenter()
+        }
+    }
+}
+
+repositories {
+    jcenter()
+    maven { url "https://dl.bintray.com/drummer-aidan/maven" }
+}
+
+dependencies {
+    compile project(':library')
+    compile 'com.android.support:appcompat-v7:' + versions.supportLib
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.github.danylovolokh:video-player-manager:0.2.0'
+    compile 'com.github.danylovolokh:list-visibility-utils:0.2.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+
+}
