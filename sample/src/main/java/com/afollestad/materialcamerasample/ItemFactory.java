@@ -18,7 +18,7 @@ class ItemFactory {
         return new AssetVideoItem(assetName, activity.getAssets().openFd(assetName), videoPlayerManager, Picasso.with(activity), imageResource);
     }
 
-    public static BaseVideoItem createItemFromDir(String filePath, int position, Activity activity,VideoPlayerManager<MetaData> videoPlayerManager){
-        return new AssetVideoItem(filePath,position,videoPlayerManager);
+    public static BaseVideoItem createItemFromDir(String filePath, Activity activity, VideoPlayerManager<MetaData> videoPlayerManager, int imageResource) {
+        return new AssetVideoItem(filePath, videoPlayerManager, Picasso.with(activity), imageResource);
     }
 }

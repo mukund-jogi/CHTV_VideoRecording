@@ -1,6 +1,5 @@
 package com.afollestad.materialcamerasample;
 
-import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.view.View;
 
@@ -10,6 +9,8 @@ import com.volokh.danylo.video_player_manager.manager.VideoPlayerManager;
 import com.volokh.danylo.video_player_manager.meta.MetaData;
 import com.volokh.danylo.video_player_manager.ui.VideoPlayerView;
 import com.volokh.danylo.video_player_manager.utils.Logger;
+
+import java.io.File;
 
 /**
  * Created by mukund.jogi on 29/9/17.
@@ -21,10 +22,10 @@ public class AssetVideoItem extends BaseVideoItem {
 
     private AssetFileDescriptor mAssetFileDescriptor;
     private String mTitle;
+    private String mVideoFilePath;
 
     private Picasso mImageLoader;
     private int mImageResource;
-    private int mposition;
 
     public AssetVideoItem(String title, AssetFileDescriptor assetFileDescriptor, VideoPlayerManager<MetaData> videoPlayerManager, Picasso imageLoader, int imageResource) {
         super(videoPlayerManager);
@@ -34,15 +35,17 @@ public class AssetVideoItem extends BaseVideoItem {
         mImageResource = imageResource;
     }
 
-    public AssetVideoItem(String filePath, int position,VideoPlayerManager<MetaData> videoPlayerManager) {
+    public AssetVideoItem(String filePath, VideoPlayerManager<MetaData> videoPlayerManager, Picasso imageLoader, int imageResource) {
         super(videoPlayerManager);
-        mTitle = filePath;
-        mposition = position;
+        mVideoFilePath = filePath;
+        mTitle = new File(filePath).getName();
+        mImageLoader = imageLoader;
+        mImageResource = imageResource;
     }
 
     @Override
     public void update(int position, final VideoListing viewHolder, VideoPlayerManager videoPlayerManager) {
-        if(SHOW_LOGS) Logger.v(TAG, "update, position " + position);
+        if (SHOW_LOGS) Logger.v(TAG, "update, position " + position);
 
         viewHolder.fileName.setText(mTitle);
         viewHolder.imageView.setVisibility(View.VISIBLE);
@@ -56,7 +59,7 @@ public class AssetVideoItem extends BaseVideoItem {
 
     @Override
     public void playNewVideo(MetaData currentItemMetaData, VideoPlayerView player, VideoPlayerManager<MetaData> videoPlayerManager) {
-        videoPlayerManager.playNewVideo(currentItemMetaData, player, "");
+        videoPlayerManager.playNewVideo(currentItemMetaData, player, mVideoFilePath);
     }
 
     @Override

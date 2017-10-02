@@ -52,7 +52,7 @@
             tools:ignore="ContentDescription"
             tools:src="@drawable/mcam_action_flash" />
 
-        <ImageButton
+        <Button
             android:id="@+id/video"
             android:layout_width="@dimen/mcam_action_icon_size"
             android:layout_height="@dimen/mcam_action_icon_size"

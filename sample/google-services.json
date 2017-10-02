@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "813896168950",
+    "firebase_url": "https://digitest-5fe95.firebaseio.com",
+    "project_id": "digitest-5fe95",
+    "storage_bucket": "digitest-5fe95.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813896168950:android:9abd2d845fdab408",
+        "android_client_info": {
+          "package_name": "com.afollestad.materialcamerasample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "813896168950-26bjko55qis77p3m6oon8ci0cbn2nn2o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGmGNsjUYy_FhEo45EKJfPIAeKr2JXKhE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
