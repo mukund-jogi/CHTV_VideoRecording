@@ -1,5 +1,7 @@
 package com.afollestad.materialcamerasample;
 
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -17,6 +19,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Log.d("FCM", "Data: " + remoteMessage.getData().toString());
         Log.d("FCM", "Body: " + remoteMessage.getNotification().getBody());
 
+
         // TODO: Send local broadcast to start/stop video recording
+        String fcmMessage = remoteMessage.getNotification().getBody().toString();
+
+        if(fcmMessage.equals("Start"))
+        {
+            LocalBroadcastManager localBroadCcastManager= LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
+            localBroadCcastManager.sendBroadcast(new Intent("START_RECORDING"));
+        }
+
+        else if(fcmMessage.equals("Stop"))
+        {
+            LocalBroadcastManager localBroadCcastManager= LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
+            localBroadCcastManager.sendBroadcast(new Intent("STOP_RECORDING"));
+        }
+
     }
 }

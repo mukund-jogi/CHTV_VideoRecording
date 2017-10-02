@@ -1,6 +1,9 @@
 package com.afollestad.materialcamerasample;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
@@ -31,6 +34,8 @@ import com.volokh.danylo.visibility_utils.scroll_utils.RecyclerViewItemPositionG
 import java.io.File;
 import java.util.ArrayList;
 
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
+
 
 public class Main2Activity extends AppCompatActivity {
 
@@ -48,6 +53,18 @@ public class Main2Activity extends AppCompatActivity {
 
         }
     });
+
+    BroadcastReceiver recordingStartReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equalsIgnoreCase("START_RECORDING")) {
+                Toast.makeText(getApplicationContext(), "STARTRECORDING",Toast.LENGTH_LONG).show();
+                btnPlay.performClick();
+                Log.d("STARTRECORDING","START_RECORDING");
+            }
+        }
+    };
     private VideoView videoView;
     private Button btnPlay;
     private MaterialCamera materialCamera;
@@ -81,6 +98,9 @@ public class Main2Activity extends AppCompatActivity {
         //First Button should record.
         btnPlay.setText(TEXT_RECORD);
 
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.registerReceiver(recordingStartReceiver, new IntentFilter("START_RECORDING"));
+
 
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,17 +110,15 @@ public class Main2Activity extends AppCompatActivity {
 
                     materialCamera.start(CAMERA_RQ);
 
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Main2Activity.this);
-                            broadcastManager.sendBroadcast(new Intent("STOP_RECORDING"));
-
-                        }
-                    }, 10000);
+//                    Handler handler = new Handler();
+//                    handler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Main2Activity.this);
+//                            broadcastManager.sendBroadcast(new Intent("STOP_RECORDING"));
 //
-
+//                        }
+//                    }, 10000);
 
                 } else if (btnPlay.getText().equals(TEXT_PLAY)) {
                     videoView.setVisibility(View.VISIBLE);
