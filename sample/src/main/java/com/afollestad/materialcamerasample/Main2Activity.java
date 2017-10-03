@@ -7,7 +7,6 @@ import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,6 +16,7 @@ import android.view.View;
 import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.MediaController;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -34,8 +34,6 @@ import com.volokh.danylo.visibility_utils.scroll_utils.RecyclerViewItemPositionG
 import java.io.File;
 import java.util.ArrayList;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-
 
 public class Main2Activity extends AppCompatActivity {
 
@@ -47,6 +45,8 @@ public class Main2Activity extends AppCompatActivity {
             new SingleListViewItemActiveCalculator(new DefaultSingleItemCalculatorCallback(), videoList1);
     public int imageId;
     RecyclerView recyclerView;
+    TextView tvFileData;
+    String myUpdate;
     VideoPlayerManager<MetaData> videoPlayerManager = new SingleVideoPlayerManager(new PlayerItemChangeListener() {
         @Override
         public void onPlayerItemChanged(MetaData metaData) {
@@ -71,6 +71,7 @@ public class Main2Activity extends AppCompatActivity {
     private int mScrollState = AbsListView.OnScrollListener.SCROLL_STATE_IDLE;
     private LinearLayoutManager mLayoutManager;
     private ItemsPositionGetter mItemsPositionGetter;
+    MyFirebaseMessagingService myFirebaseMessagingService = new MyFirebaseMessagingService();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,10 +139,14 @@ public class Main2Activity extends AppCompatActivity {
             saveFolder.mkdir();
         }
 
+
+
         for (File f : saveFolder.listFiles()) {
             videoList1.add(ItemFactory.createItemFromDir("file://" + f.getAbsolutePath(), Main2Activity.this, videoPlayerManager, R.mipmap.ic_launcher));
+
             Log.d("File", "FileName:" + f.getName());
         }
+
 
      /*   saveFolder.deleteOnExit();
         if (!saveFolder.mkdirs())
@@ -171,6 +176,8 @@ public class Main2Activity extends AppCompatActivity {
 //                .start(CAMERA_RQ);
 
 //        autoStop();
+
+        tvFileData = (TextView) findViewById(R.id.tvFileData);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setVisibility(View.VISIBLE);
@@ -240,10 +247,13 @@ public class Main2Activity extends AppCompatActivity {
                 //https://github.com/danylovolokh/VideoPlayerManager
                 //https://github.com/eneim/toro
                 btnPlay.setVisibility(View.GONE);
-                recyclerView.setVisibility(View.VISIBLE);
 
+
+
+                recyclerView.setVisibility(View.VISIBLE);
                 videoList1.add(0, ItemFactory.createItemFromDir(newVideo, this, videoPlayerManager, R.mipmap.ic_launcher));
                 recyclerView.getAdapter().notifyDataSetChanged();
+
             } else if (data != null) {
                 Exception e = (Exception) data.getSerializableExtra(MaterialCamera.ERROR_EXTRA);
                 if (e != null) {
@@ -255,6 +265,7 @@ public class Main2Activity extends AppCompatActivity {
             }
         }
     }
+
 
     @Override
     protected void onStop() {

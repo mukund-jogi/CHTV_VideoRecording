@@ -34,6 +34,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.afollestad.materialcamera.MaterialCamera;
 import com.afollestad.materialcamera.R;
 import com.afollestad.materialcamera.util.CameraUtil;
@@ -59,15 +61,20 @@ abstract class BaseCameraFragment extends Fragment
   protected Handler mPositionHandler;
   protected MediaRecorder mMediaRecorder;
   private int mIconTextColor;
+    public String myMessage;
 
   BroadcastReceiver recordingStopReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
       if (intent.getAction().equalsIgnoreCase("STOP_RECORDING")) {
         stopRecordingVideo(true);
+        intent.putExtras(intent.getExtras());
       }
+      Log.d("Message",intent.getExtras().toString());
     }
   };
+
+
 
   protected static void LOG(Object context, String message) {
     Log.d(

@@ -1,7 +1,9 @@
 package com.afollestad.materialcamerasample;
 
 import android.content.res.AssetFileDescriptor;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.volokh.danylo.video_player_manager.Config;
@@ -11,6 +13,8 @@ import com.volokh.danylo.video_player_manager.ui.VideoPlayerView;
 import com.volokh.danylo.video_player_manager.utils.Logger;
 
 import java.io.File;
+
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
 
 /**
  * Created by mukund.jogi on 29/9/17.
@@ -23,9 +27,10 @@ public class AssetVideoItem extends BaseVideoItem {
     private AssetFileDescriptor mAssetFileDescriptor;
     private String mTitle;
     private String mVideoFilePath;
-
+    private String myUpdatedValue;
     private Picasso mImageLoader;
     private int mImageResource;
+    MyFirebaseMessagingService myFirebaseMessagingService =new MyFirebaseMessagingService();
 
     public AssetVideoItem(String title, AssetFileDescriptor assetFileDescriptor, VideoPlayerManager<MetaData> videoPlayerManager, Picasso imageLoader, int imageResource) {
         super(videoPlayerManager);
@@ -39,6 +44,7 @@ public class AssetVideoItem extends BaseVideoItem {
         super(videoPlayerManager);
         mVideoFilePath = filePath;
         mTitle = new File(filePath).getName();
+        myUpdatedValue = MyFirebaseMessagingService.fcmData;
         mImageLoader = imageLoader;
         mImageResource = imageResource;
     }
@@ -48,12 +54,19 @@ public class AssetVideoItem extends BaseVideoItem {
         if (SHOW_LOGS) Logger.v(TAG, "update, position " + position);
 
         viewHolder.fileName.setText(mTitle);
+        viewHolder.fileName.setVisibility(View.VISIBLE);
         viewHolder.imageView.setVisibility(View.VISIBLE);
         mImageLoader.load(mImageResource).into(viewHolder.imageView);
 
+        viewHolder.videoStatus.setText(new MyFirebaseMessagingService().fcmData);
+        viewHolder.videoStatus.setVisibility(View.VISIBLE);
+
         viewHolder.fileName.setText(mTitle);
+        viewHolder.fileName.setVisibility(View.VISIBLE);
         viewHolder.imageView.setVisibility(View.VISIBLE);
         mImageLoader.load(mImageResource).into(viewHolder.imageView);
+        viewHolder.videoStatus.setText(myUpdatedValue);
+        viewHolder.videoStatus.setVisibility(View.VISIBLE);
     }
 
 
@@ -69,6 +82,6 @@ public class AssetVideoItem extends BaseVideoItem {
 
     @Override
     public String toString() {
-        return getClass() + ", mTitle[" + mTitle + "]";
+        return getClass() + ", mTitle[" + myUpdatedValue + "]";
     }
 }

@@ -67,6 +67,7 @@ public abstract class BaseVideoItem implements VideoItem, ListItem {
         ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
         layoutParams.height = screenWidth;
 
+
         final VideoListing videoViewHolder = new VideoListing(view);
         view.setTag(videoViewHolder);
 
@@ -79,6 +80,7 @@ public abstract class BaseVideoItem implements VideoItem, ListItem {
             public void onVideoPreparedMainThread() {
                 // When video is prepared it's about to start playback. So we hide the cover
                 videoViewHolder.imageView.setVisibility(View.INVISIBLE);
+                videoViewHolder.videoStatus.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -97,6 +99,8 @@ public abstract class BaseVideoItem implements VideoItem, ListItem {
             public void onVideoStoppedMainThread() {
                 // Show the cover when video stopped
                 videoViewHolder.imageView.setVisibility(View.VISIBLE);
+                videoViewHolder.videoStatus.setVisibility(View.VISIBLE);
+
             }
         });
         return view;

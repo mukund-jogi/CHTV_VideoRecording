@@ -15,7 +15,7 @@ class VideoListing extends RecyclerView.ViewHolder {
 
     VideoPlayerView videoPlayerView;
     TextView fileName;
-    private TextView videoStatus;
+    TextView videoStatus;
     ImageView imageView;
     TextView visibility_percents;
 

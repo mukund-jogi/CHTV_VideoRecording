@@ -7,11 +7,15 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.net.URISyntaxException;
+
 /**
  * Created by kevin.adesara on 02/10/17.
  */
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
+
+    public static String fcmData;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -22,17 +26,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // TODO: Send local broadcast to start/stop video recording
         String fcmMessage = remoteMessage.getNotification().getBody().toString();
+        fcmData = remoteMessage.getData().toString();
 
-        if(fcmMessage.equals("Start"))
+        if(fcmMessage.equalsIgnoreCase("Start"))
         {
             LocalBroadcastManager localBroadCcastManager= LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
             localBroadCcastManager.sendBroadcast(new Intent("START_RECORDING"));
         }
 
-        else if(fcmMessage.equals("Stop"))
+        else if(fcmMessage.equalsIgnoreCase("Stop"))
         {
-            LocalBroadcastManager localBroadCcastManager= LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
-            localBroadCcastManager.sendBroadcast(new Intent("STOP_RECORDING"));
+            Intent intent = new Intent("STOP_RECORDING");
+            intent.putExtra(fcmData,true);
+            LocalBroadcastManager localBroadcastManager= LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
+            localBroadcastManager.sendBroadcast(intent);
         }
 
     }
