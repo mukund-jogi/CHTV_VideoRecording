@@ -46,6 +46,7 @@ public class Main2Activity extends AppCompatActivity {
     public int imageId;
     RecyclerView recyclerView;
     TextView tvFileData;
+    DBHelper myDBHelper;
     String myUpdate;
     VideoPlayerManager<MetaData> videoPlayerManager = new SingleVideoPlayerManager(new PlayerItemChangeListener() {
         @Override
@@ -81,6 +82,8 @@ public class Main2Activity extends AppCompatActivity {
     }
 
     private void setupControls() {
+
+        myDBHelper = new DBHelper(Main2Activity.this);
         //Video Player Setup
         videoView = (VideoView) findViewById(R.id.videoPlay);
         videoView.setMediaController(new MediaController(this));
@@ -140,10 +143,12 @@ public class Main2Activity extends AppCompatActivity {
         }
 
 
-
         for (File f : saveFolder.listFiles()) {
             videoList1.add(ItemFactory.createItemFromDir("file://" + f.getAbsolutePath(), Main2Activity.this, videoPlayerManager, R.mipmap.ic_launcher));
-
+            if(myDBHelper.insertData(path,MyFirebaseMessagingService.fcmData)){
+                Log.d("FCM","Done");
+                Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
+            }
             Log.d("File", "FileName:" + f.getName());
         }
 
@@ -248,9 +253,11 @@ public class Main2Activity extends AppCompatActivity {
                 //https://github.com/eneim/toro
                 btnPlay.setVisibility(View.GONE);
 
-
-
                 recyclerView.setVisibility(View.VISIBLE);
+                if(myDBHelper.insertData(newVideo,MyFirebaseMessagingService.fcmData)){
+                    Log.d("FCM","Done");
+                    Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
+                }
                 videoList1.add(0, ItemFactory.createItemFromDir(newVideo, this, videoPlayerManager, R.mipmap.ic_launcher));
                 recyclerView.getAdapter().notifyDataSetChanged();
 
