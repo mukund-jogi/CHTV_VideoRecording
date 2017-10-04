@@ -7,8 +7,6 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import java.net.URISyntaxException;
-
 /**
  * Created by kevin.adesara on 02/10/17.
  */
@@ -41,6 +39,5 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             LocalBroadcastManager localBroadcastManager= LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
             localBroadcastManager.sendBroadcast(intent);
         }
-
     }
 }
