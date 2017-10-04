@@ -1,6 +1,7 @@
 package com.afollestad.materialcamerasample;
 
 import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -40,11 +41,11 @@ public class AssetVideoItem extends BaseVideoItem {
         mImageResource = imageResource;
     }
 
-    public AssetVideoItem(String filePath, VideoPlayerManager<MetaData> videoPlayerManager, Picasso imageLoader, int imageResource) {
+    public AssetVideoItem(String filePath, VideoPlayerManager<MetaData> videoPlayerManager, Picasso imageLoader, int imageResource, String data) {
         super(videoPlayerManager);
         mVideoFilePath = filePath;
         mTitle = new File(filePath).getName();
-        myUpdatedValue = MyFirebaseMessagingService.fcmData;
+        myUpdatedValue = data;
         mImageLoader = imageLoader;
         mImageResource = imageResource;
     }

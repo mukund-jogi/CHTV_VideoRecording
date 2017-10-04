@@ -1,6 +1,7 @@
 package com.afollestad.materialcamerasample;
 
 import android.app.Activity;
+import android.database.Cursor;
 
 import com.squareup.picasso.Picasso;
 import com.volokh.danylo.video_player_manager.manager.VideoPlayerManager;
@@ -18,7 +19,7 @@ class ItemFactory {
         return new AssetVideoItem(assetName, activity.getAssets().openFd(assetName), videoPlayerManager, Picasso.with(activity), imageResource);
     }
 
-    public static BaseVideoItem createItemFromDir(String filePath, Activity activity, VideoPlayerManager<MetaData> videoPlayerManager, int imageResource) {
-        return new AssetVideoItem(filePath, videoPlayerManager, Picasso.with(activity), imageResource);
+    public static BaseVideoItem createItemFromDir(String filePath, Activity activity, VideoPlayerManager<MetaData> videoPlayerManager, int imageResource, String data) {
+        return new AssetVideoItem(filePath, videoPlayerManager, Picasso.with(activity), imageResource,data);
     }
 }

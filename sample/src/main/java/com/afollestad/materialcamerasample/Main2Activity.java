@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -84,6 +85,7 @@ public class Main2Activity extends AppCompatActivity {
     private void setupControls() {
 
         myDBHelper = new DBHelper(Main2Activity.this);
+
         //Video Player Setup
         videoView = (VideoView) findViewById(R.id.videoPlay);
         videoView.setMediaController(new MediaController(this));
@@ -142,14 +144,16 @@ public class Main2Activity extends AppCompatActivity {
             saveFolder.mkdir();
         }
 
-
-        for (File f : saveFolder.listFiles()) {
-            videoList1.add(ItemFactory.createItemFromDir("file://" + f.getAbsolutePath(), Main2Activity.this, videoPlayerManager, R.mipmap.ic_launcher));
-            if(myDBHelper.insertData(path,MyFirebaseMessagingService.fcmData)){
-                Log.d("FCM","Done");
-                Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
-            }
-            Log.d("File", "FileName:" + f.getName());
+        ArrayList<String> arrayList =  myDBHelper.getDataFromTable();
+//        for (File f : saveFolder.listFiles()) {
+            for (int i =0;i<saveFolder.listFiles().length;i++) {
+                File f = saveFolder.listFiles()[i];
+//            if(myDBHelper.insertData(path,MyFirebaseMessagingService.fcmData)){
+//                Log.d("FCM","InsertDone");
+////                Toast.makeText(getApplicationContext(),myDBHelper.getDataFromTable().toString(),Toast.LENGTH_LONG).show();
+//            }
+            videoList1.add(ItemFactory.createItemFromDir(f.getAbsolutePath(), Main2Activity.this, videoPlayerManager, R.mipmap.ic_launcher,myDBHelper.getVideoData(f.getAbsolutePath())));
+            Log.e("File", "FileName    :" + arrayList.get(i)+" "+i);
         }
 
 
@@ -247,18 +251,21 @@ public class Main2Activity extends AppCompatActivity {
         if (requestCode == CAMERA_RQ) {
             if (resultCode == RESULT_OK) {
                 imageId = 0;
-                String newVideo = String.valueOf(data.getData());
+                Uri vidl = data.getData();
+                String newVideo = String.valueOf(vidl.getEncodedPath());
+                Log.i("tag", "DATA:" + newVideo);
                 //https://medium.com/@v.danylo/implementing-video-playback-in-a-scrolled-list-listview-recyclerview-d04bc2148429
                 //https://github.com/danylovolokh/VideoPlayerManager
                 //https://github.com/eneim/toro
                 btnPlay.setVisibility(View.GONE);
 
                 recyclerView.setVisibility(View.VISIBLE);
+                Log.d("FCM","Updated "+MyFirebaseMessagingService.fcmData);
                 if(myDBHelper.insertData(newVideo,MyFirebaseMessagingService.fcmData)){
-                    Log.d("FCM","Done");
-                    Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
+//                    Toast.makeText(getApplicationContext(),myDBHelper.getDataFromTable().toString(),Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),String.valueOf(myDBHelper.getData(newVideo)),Toast.LENGTH_LONG).show();
                 }
-                videoList1.add(0, ItemFactory.createItemFromDir(newVideo, this, videoPlayerManager, R.mipmap.ic_launcher));
+                videoList1.add(0, ItemFactory.createItemFromDir(newVideo, this, videoPlayerManager, R.mipmap.ic_launcher, myDBHelper.getVideoData(newVideo)));
                 recyclerView.getAdapter().notifyDataSetChanged();
 
             } else if (data != null) {
