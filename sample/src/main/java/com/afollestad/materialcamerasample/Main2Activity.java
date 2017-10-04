@@ -34,6 +34,7 @@ import com.volokh.danylo.visibility_utils.scroll_utils.RecyclerViewItemPositionG
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class Main2Activity extends AppCompatActivity {
@@ -55,25 +56,34 @@ public class Main2Activity extends AppCompatActivity {
 
         }
     });
-
+    MyFirebaseMessagingService myFirebaseMessagingService = new MyFirebaseMessagingService();
+    private HashMap<String, String> matchInfo = new HashMap<>();
+    private VideoView videoView;
+    private Button btnPlay;
     BroadcastReceiver recordingStartReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equalsIgnoreCase("START_RECORDING")) {
-                Toast.makeText(getApplicationContext(), "STARTRECORDING",Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "STARTRECORDING", Toast.LENGTH_LONG).show();
+
+                matchInfo.put("match_id", intent.getStringExtra("match_id"));
+                matchInfo.put("team_a", intent.getStringExtra("team_a"));
+                matchInfo.put("team_b", intent.getStringExtra("team_b"));
+                matchInfo.put("over", intent.getStringExtra("over"));
+                matchInfo.put("score", intent.getStringExtra("score"));
+                matchInfo.put("batting", intent.getStringExtra("batting"));
+
+                Log.d("START_RECORDING", "Data: " + matchInfo.toString());
+
                 btnPlay.performClick();
-                Log.d("STARTRECORDING","START_RECORDING");
             }
         }
     };
-    private VideoView videoView;
-    private Button btnPlay;
     private MaterialCamera materialCamera;
     private int mScrollState = AbsListView.OnScrollListener.SCROLL_STATE_IDLE;
     private LinearLayoutManager mLayoutManager;
     private ItemsPositionGetter mItemsPositionGetter;
-    MyFirebaseMessagingService myFirebaseMessagingService = new MyFirebaseMessagingService();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,16 +154,16 @@ public class Main2Activity extends AppCompatActivity {
             saveFolder.mkdir();
         }
 
-        ArrayList<String> arrayList =  myDBHelper.getDataFromTable();
+//        ArrayList<String> arrayList =  myDBHelper.getDataFromTable();
 //        for (File f : saveFolder.listFiles()) {
-            for (int i =0;i<saveFolder.listFiles().length;i++) {
-                File f = saveFolder.listFiles()[i];
+        for (int i = 0; i < saveFolder.listFiles().length; i++) {
+            File f = saveFolder.listFiles()[i];
 //            if(myDBHelper.insertData(path,MyFirebaseMessagingService.fcmData)){
 //                Log.d("FCM","InsertDone");
 ////                Toast.makeText(getApplicationContext(),myDBHelper.getDataFromTable().toString(),Toast.LENGTH_LONG).show();
 //            }
-            videoList1.add(ItemFactory.createItemFromDir(f.getAbsolutePath(), Main2Activity.this, videoPlayerManager, R.mipmap.ic_launcher,myDBHelper.getVideoData(f.getAbsolutePath())));
-            Log.e("File", "FileName    :" + arrayList.get(i)+" "+i);
+            videoList1.add(ItemFactory.createItemFromDir(f.getAbsolutePath(), Main2Activity.this, videoPlayerManager, R.mipmap.ic_launcher, myDBHelper.getVideoData(f.getAbsolutePath())));
+//            Log.e("File", "FileName    :" + arrayList.get(i)+" "+i);
         }
 
 
@@ -260,10 +270,9 @@ public class Main2Activity extends AppCompatActivity {
                 btnPlay.setVisibility(View.GONE);
 
                 recyclerView.setVisibility(View.VISIBLE);
-                Log.d("FCM","Updated "+MyFirebaseMessagingService.fcmData);
-                if(myDBHelper.insertData(newVideo,MyFirebaseMessagingService.fcmData)){
+                if (myDBHelper.insertData(newVideo, matchInfo.toString())) {
 //                    Toast.makeText(getApplicationContext(),myDBHelper.getDataFromTable().toString(),Toast.LENGTH_LONG).show();
-                    Toast.makeText(getApplicationContext(),String.valueOf(myDBHelper.getData(newVideo)),Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), String.valueOf(myDBHelper.getData(newVideo)), Toast.LENGTH_LONG).show();
                 }
                 videoList1.add(0, ItemFactory.createItemFromDir(newVideo, this, videoPlayerManager, R.mipmap.ic_launcher, myDBHelper.getVideoData(newVideo)));
                 recyclerView.getAdapter().notifyDataSetChanged();

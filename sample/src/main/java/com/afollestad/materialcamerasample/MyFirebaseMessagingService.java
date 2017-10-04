@@ -7,13 +7,13 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.Map;
+
 /**
  * Created by kevin.adesara on 02/10/17.
  */
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
-
-    public static String fcmData;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -21,22 +21,24 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Log.d("FCM", "Data: " + remoteMessage.getData().toString());
         Log.d("FCM", "Body: " + remoteMessage.getNotification().getBody());
 
+        Map<String, String> data = remoteMessage.getData();
+        String dattMess = String.valueOf(remoteMessage.getData());
+        String command = data.get("command");
 
-        // TODO: Send local broadcast to start/stop video recording
-        String fcmMessage = remoteMessage.getNotification().getBody().toString();
-        fcmData = remoteMessage.getData().toString();
 
-        if(fcmMessage.equalsIgnoreCase("Start"))
-        {
-            LocalBroadcastManager localBroadCcastManager= LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
-            localBroadCcastManager.sendBroadcast(new Intent("START_RECORDING"));
-        }
+        if (command.equalsIgnoreCase("START_RECORDING")) {
+            Intent intent = new Intent("START_RECORDING");
+            for (Map.Entry<String, String> entry : remoteMessage.getData().entrySet()) {
+                intent.putExtra(entry.getKey(), entry.getValue());
+            }
+            LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
+            localBroadcastManager.sendBroadcast(intent);
 
-        else if(fcmMessage.equalsIgnoreCase("Stop"))
-        {
+        } else if (command.equalsIgnoreCase("END_RECORDING")) {
+            // This broadcast is handled in library module > BaseCameraFragment
             Intent intent = new Intent("STOP_RECORDING");
-            intent.putExtra(fcmData,true);
-            LocalBroadcastManager localBroadcastManager= LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
+//            intent.putExtra
+            LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
             localBroadcastManager.sendBroadcast(intent);
         }
     }

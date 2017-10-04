@@ -1,10 +1,7 @@
 package com.afollestad.materialcamerasample;
 
 import android.content.res.AssetFileDescriptor;
-import android.database.Cursor;
-import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.volokh.danylo.video_player_manager.Config;
@@ -14,8 +11,6 @@ import com.volokh.danylo.video_player_manager.ui.VideoPlayerView;
 import com.volokh.danylo.video_player_manager.utils.Logger;
 
 import java.io.File;
-
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
 
 /**
  * Created by mukund.jogi on 29/9/17.
@@ -59,8 +54,8 @@ public class AssetVideoItem extends BaseVideoItem {
         viewHolder.imageView.setVisibility(View.VISIBLE);
         mImageLoader.load(mImageResource).into(viewHolder.imageView);
 
-        viewHolder.videoStatus.setText(new MyFirebaseMessagingService().fcmData);
-        viewHolder.videoStatus.setVisibility(View.VISIBLE);
+//        viewHolder.videoStatus.setText(new MyFirebaseMessagingService().fcmData);
+//        viewHolder.videoStatus.setVisibility(View.VISIBLE);
 
         viewHolder.fileName.setText(mTitle);
         viewHolder.fileName.setVisibility(View.VISIBLE);
