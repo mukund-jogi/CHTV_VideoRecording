@@ -57,6 +57,10 @@
             android:resource="@color/colorAccent" />
 
         <!-- END Firebase -->
+
+        <!-- Mqtt Service -->
+        <service android:name="org.eclipse.paho.android.service.MqttService" >
+        </service>
     </application>
 
 </manifest>

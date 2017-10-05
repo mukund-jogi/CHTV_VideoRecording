@@ -57,25 +57,20 @@ public class Main2Activity extends AppCompatActivity {
         }
     });
     MyFirebaseMessagingService myFirebaseMessagingService = new MyFirebaseMessagingService();
-    private HashMap<String, String> matchInfo = new HashMap<>();
+    private HashMap<String, String> matchInfo1 = new HashMap<>();
     private VideoView videoView;
     private Button btnPlay;
+    private String server_Match_Id, server_Over;
+    MatchInfo matchInfo = new MatchInfo();
+    String sync_Status = "Local";
     BroadcastReceiver recordingStartReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equalsIgnoreCase("START_RECORDING")) {
                 Toast.makeText(getApplicationContext(), "STARTRECORDING", Toast.LENGTH_LONG).show();
-
-                matchInfo.put("match_id", intent.getStringExtra("match_id"));
-                matchInfo.put("team_a", intent.getStringExtra("team_a"));
-                matchInfo.put("team_b", intent.getStringExtra("team_b"));
-                matchInfo.put("over", intent.getStringExtra("over"));
-                matchInfo.put("score", intent.getStringExtra("score"));
-                matchInfo.put("batting", intent.getStringExtra("batting"));
-
-                Log.d("START_RECORDING", "Data: " + matchInfo.toString());
-
+                server_Match_Id = intent.getStringExtra("match_id");
+                server_Over = intent.getStringExtra("over");
                 btnPlay.performClick();
             }
         }
@@ -126,15 +121,6 @@ public class Main2Activity extends AppCompatActivity {
 
                     materialCamera.start(CAMERA_RQ);
 
-//                    Handler handler = new Handler();
-//                    handler.postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Main2Activity.this);
-//                            broadcastManager.sendBroadcast(new Intent("STOP_RECORDING"));
-//
-//                        }
-//                    }, 10000);
 
                 } else if (btnPlay.getText().equals(TEXT_PLAY)) {
                     videoView.setVisibility(View.VISIBLE);
@@ -154,22 +140,19 @@ public class Main2Activity extends AppCompatActivity {
             saveFolder.mkdir();
         }
 
-//        ArrayList<String> arrayList =  myDBHelper.getDataFromTable();
-//        for (File f : saveFolder.listFiles()) {
-        for (int i = 0; i < saveFolder.listFiles().length; i++) {
+
+        /*for (int i = 0; i < saveFolder.listFiles().length; i++) {
             File f = saveFolder.listFiles()[i];
-//            if(myDBHelper.insertData(path,MyFirebaseMessagingService.fcmData)){
-//                Log.d("FCM","InsertDone");
-////                Toast.makeText(getApplicationContext(),myDBHelper.getDataFromTable().toString(),Toast.LENGTH_LONG).show();
-//            }
-            videoList1.add(ItemFactory.createItemFromDir(f.getAbsolutePath(), Main2Activity.this, videoPlayerManager, R.mipmap.ic_launcher, myDBHelper.getVideoData(f.getAbsolutePath())));
+            videoList1.add(ItemFactory.createItemFromDir(f.getAbsolutePath(), Main2Activity.this, videoPlayerManager, R.mipmap.ic_launcher, String.valueOf(myDBHelper.getMatches())));
 //            Log.e("File", "FileName    :" + arrayList.get(i)+" "+i);
+        }*/
+
+        ArrayList<MatchInfo> matches = myDBHelper.getAllMatches();
+        for (MatchInfo info : matches) {
+            videoList1.add(ItemFactory.createItemFromDir(info.getVideoUrl(), this, videoPlayerManager, R.mipmap.ic_launcher, info.toString()));
         }
 
 
-     /*   saveFolder.deleteOnExit();
-        if (!saveFolder.mkdirs())
-            throw new RuntimeException("Unable to create save directory, make sure WRITE_EXTERNAL_STORAGE permission is granted.");*/
         materialCamera = new MaterialCamera(this);                               // Constructor takes an Activity
         materialCamera.allowRetry(true)                                  // Whether or not 'Retry' is visible during playback
                 .autoSubmit(true)                                 // Whether or not user is allowed to playback videos after recording. This can affect other things, discussed in the next section.
@@ -261,20 +244,19 @@ public class Main2Activity extends AppCompatActivity {
         if (requestCode == CAMERA_RQ) {
             if (resultCode == RESULT_OK) {
                 imageId = 0;
-                Uri vidl = data.getData();
-                String newVideo = String.valueOf(vidl.getEncodedPath());
-                Log.i("tag", "DATA:" + newVideo);
+
+                String newVideoPath = String.valueOf(data.getData());
+                Log.i("tag", "DATA:" + newVideoPath);
                 //https://medium.com/@v.danylo/implementing-video-playback-in-a-scrolled-list-listview-recyclerview-d04bc2148429
                 //https://github.com/danylovolokh/VideoPlayerManager
                 //https://github.com/eneim/toro
                 btnPlay.setVisibility(View.GONE);
 
+                myDBHelper.insertMatchInfo(new MatchInfo(server_Match_Id,server_Over,newVideoPath,sync_Status));
+                Log.e("Matches", String.valueOf(myDBHelper.getMatchesByStatus(sync_Status)));
                 recyclerView.setVisibility(View.VISIBLE);
-                if (myDBHelper.insertData(newVideo, matchInfo.toString())) {
-//                    Toast.makeText(getApplicationContext(),myDBHelper.getDataFromTable().toString(),Toast.LENGTH_LONG).show();
-                    Toast.makeText(getApplicationContext(), String.valueOf(myDBHelper.getData(newVideo)), Toast.LENGTH_LONG).show();
-                }
-                videoList1.add(0, ItemFactory.createItemFromDir(newVideo, this, videoPlayerManager, R.mipmap.ic_launcher, myDBHelper.getVideoData(newVideo)));
+
+                videoList1.add(0, ItemFactory.createItemFromDir(newVideoPath, this, videoPlayerManager, R.mipmap.ic_launcher, String.valueOf(myDBHelper.getMatchesByMatchIdAndOver(server_Match_Id,server_Over))));
                 recyclerView.getAdapter().notifyDataSetChanged();
 
             } else if (data != null) {

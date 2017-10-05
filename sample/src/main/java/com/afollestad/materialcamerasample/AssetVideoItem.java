@@ -26,7 +26,6 @@ public class AssetVideoItem extends BaseVideoItem {
     private String myUpdatedValue;
     private Picasso mImageLoader;
     private int mImageResource;
-    MyFirebaseMessagingService myFirebaseMessagingService =new MyFirebaseMessagingService();
 
     public AssetVideoItem(String title, AssetFileDescriptor assetFileDescriptor, VideoPlayerManager<MetaData> videoPlayerManager, Picasso imageLoader, int imageResource) {
         super(videoPlayerManager);
