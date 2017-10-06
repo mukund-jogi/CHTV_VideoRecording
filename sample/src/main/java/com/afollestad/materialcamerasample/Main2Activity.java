@@ -31,10 +31,19 @@ import com.volokh.danylo.visibility_utils.calculator.SingleListViewItemActiveCal
 import com.volokh.danylo.visibility_utils.scroll_utils.ItemsPositionGetter;
 import com.volokh.danylo.visibility_utils.scroll_utils.RecyclerViewItemPositionGetter;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
-
 
 public class Main2Activity extends AppCompatActivity {
 
@@ -48,20 +57,16 @@ public class Main2Activity extends AppCompatActivity {
     RecyclerView recyclerView;
     TextView tvFileData;
     DBHelper myDBHelper;
-    String myUpdate;
-    File filesFromDir;
     VideoPlayerManager<MetaData> videoPlayerManager = new SingleVideoPlayerManager(new PlayerItemChangeListener() {
         @Override
         public void onPlayerItemChanged(MetaData metaData) {
 
         }
     });
-    MyFirebaseMessagingService myFirebaseMessagingService = new MyFirebaseMessagingService();
-    private HashMap<String, String> matchInfo1 = new HashMap<>();
+
     private VideoView videoView;
     private Button btnPlay;
     private String server_Match_Id, server_Over;
-    MatchInfo matchInfo = new MatchInfo();
     String sync_Status = "Local";
     BroadcastReceiver recordingStartReceiver = new BroadcastReceiver() {
 
@@ -80,11 +85,20 @@ public class Main2Activity extends AppCompatActivity {
     private LinearLayoutManager mLayoutManager;
     private ItemsPositionGetter mItemsPositionGetter;
 
+    // MQTT
+    final String subscriptionTopicStartOver = "start_over";
+    final String subscriptionTopicEndOver = "end_over";
+    final String serverUri = "broker.hivemq.com:8000";
+    MqttAndroidClient mqttAndroidClient;
+    String clientId = "CHTv";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         setupControls();
+        mqttImplementation();
     }
 
     private void setupControls() {
@@ -212,6 +226,109 @@ public class Main2Activity extends AppCompatActivity {
             }
         });
     }
+
+    private void mqttImplementation() {
+        clientId = clientId + System.currentTimeMillis();
+        mqttAndroidClient = new MqttAndroidClient(this, serverUri, clientId);
+        mqttAndroidClient.setCallback(new MqttCallbackExtended() {
+            @Override
+            public void connectComplete(boolean reconnect, String serverUri) {
+                if(reconnect){
+                    addToHistory("Reconnected to : " + serverUri);
+                    // Because Clean Session is true, we need to re-subscribe
+                    subscribeToTopic();
+                }else {
+                    addToHistory("Connected to: " + serverUri);
+                }
+
+
+            }
+
+            @Override
+            public void connectionLost(Throwable throwable) {
+                addToHistory("The Connection was lost.");
+            }
+
+            @Override
+            public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
+                addToHistory("Incoming message: " + new String(mqttMessage.getPayload()));
+
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
+
+            }
+        });
+
+
+        MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
+        mqttConnectOptions.setAutomaticReconnect(true);
+        mqttConnectOptions.setCleanSession(false);
+
+
+        try {
+            //addToHistory("Connecting to " + serverUri);
+            mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
+                    disconnectedBufferOptions.setBufferEnabled(true);
+                    disconnectedBufferOptions.setBufferSize(100);
+                    disconnectedBufferOptions.setPersistBuffer(false);
+                    disconnectedBufferOptions.setDeleteOldestMessages(false);
+                    mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
+                    subscribeToTopic();
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    addToHistory("Failed to connect to: " + serverUri);
+                }
+            });
+
+
+        } catch (MqttException ex){
+            ex.printStackTrace();
+        }
+
+    }
+    private void addToHistory(String mainText){
+        System.out.println("LOG: " + mainText);
+
+//        Snackbar.make(findViewById(android.R.id.content), mainText, Snackbar.LENGTH_LONG)
+//                .setAction("Action", null).show();
+
+    }
+    public void subscribeToTopic(){
+        try {
+            mqttAndroidClient.subscribe(subscriptionTopicStartOver, 0, null, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    addToHistory("Subscribed!");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    addToHistory("Failed to subscribe");
+                }
+            });
+
+            // THIS DOES NOT WORK!
+            mqttAndroidClient.subscribe(subscriptionTopicStartOver, 0, new IMqttMessageListener() {
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    // message Arrived!
+                    System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
+                }
+            });
+
+        } catch (MqttException ex){
+            System.err.println("Exception whilst subscribing");
+            ex.printStackTrace();
+        }
+    }
+
 
     @Override
     public void onResume() {
