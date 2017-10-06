@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
@@ -32,7 +33,7 @@ class DBHelper extends SQLiteOpenHelper {
     // TODO: 5. Method to get match info according to status, i.e., get all matched which are not synced on server
 
     public DBHelper(Context context) {
-        super(context, DATABASE_NAME, null, 2);
+        super(context, DATABASE_NAME, null, 1);
     }
 
     @Override
@@ -58,35 +59,15 @@ class DBHelper extends SQLiteOpenHelper {
         Log.e("DATABASE",cv.toString());
     }
 
-    public boolean insertData(String videoPath,String match_id, String over_started) {
-        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("video_url", videoPath);
-        contentValues.put("match_id", match_id);
-        contentValues.put("over_started", over_started);
-//        contentValues.put("updatedData", videoData);
-        sqLiteDatabase.insert("match_info", null, contentValues);
-        return true;
-    }
-
-    public int numberOfRows() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        int numRows = (int) DatabaseUtils.queryNumEntries(db, "match_info");
-        return numRows;
-    }
-
-    public Cursor getData(String videoPath) {
-        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
-        Cursor cursor = sqLiteDatabase.rawQuery("select * from match_info where video_url = '" + videoPath + "'", null);
-        return cursor;
+    public ArrayList<MatchInfo> getAllMatches() {
+        return getMatches(null, null);
     }
 
     public ArrayList<MatchInfo> getMatchesByStatus(String syncStatus) {
         return getMatches("sync_status=?", new String[]{syncStatus});
     }
 
-    public ArrayList<MatchInfo> getMatchesByMatchIdAndOver(String match_Id, String over)
-    {
+    public ArrayList<MatchInfo> getMatchesByMatchIdAndOver(String match_Id, String over) {
         return getMatches("match_id=? AND over =?",new String[]{match_Id,over});
     }
 
@@ -97,54 +78,14 @@ class DBHelper extends SQLiteOpenHelper {
         Cursor cursor = database.query("match_info", null, selection, selectionArg, null, null, null);
         while (cursor.moveToNext()) {
             MatchInfo info = MatchInfo.fromCursor(cursor);
-            matches.add(info);
+            // TODO: Check video file exists or not
+            //File file = new File(info.getVideoUrl());
+            //if (file.exists()) {
+                matches.add(info);
+            //}
         }
         cursor.close();
         Log.e("Matches", String.valueOf(matches));
         return matches;
-    }
-
-    public ArrayList<String> getVideoData(String videoPath) {
-        ArrayList<String> arrayList1 = new ArrayList<String>();
-        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
-        Cursor cursor = sqLiteDatabase.rawQuery("select * from match_info where videoPath = '" + videoPath + "'", null);
-        cursor.moveToFirst();
-        do {
-            arrayList1.add(cursor.getString(cursor.getColumnIndex(FILEPATH)));
-            arrayList1.add(cursor.getString(cursor.getColumnIndex(MATCH_ID)));
-            arrayList1.add(cursor.getString(cursor.getColumnIndex(OVER)));
-
-            Log.e("File", "Db File name    :" + cursor.getString(cursor.getColumnIndex(FILEPATH)));
-            Log.e("File", "Db File name    :" + cursor.getString(cursor.getColumnIndex(VIDEODATA)));
-        } while (cursor.moveToNext());
-        return arrayList1;
-    }
-
-
-    public boolean updateData(String videoPath, String videoData) {
-        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(FILEPATH, videoPath);
-        contentValues.put(VIDEODATA, videoData);
-        sqLiteDatabase.update("match_info", contentValues, FILEPATH + " = ?", new String[]{videoPath});
-        return true;
-    }
-
-    public ArrayList<String> getDataFromTable() {
-        ArrayList<String> arrayList = new ArrayList<String>();
-        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
-        Cursor cursor = sqLiteDatabase.rawQuery("select * from match_info", null);
-        cursor.moveToFirst();
-        do {
-            arrayList.add(cursor.getString(cursor.getColumnIndex(FILEPATH)));
-//            arrayList.add(cursor.getString(cursor.getColumnIndex(VIDEODATA)));
-            Log.e("File", "Db File name    :" + cursor.getString(cursor.getColumnIndex(VIDEODATA)));
-        } while (cursor.moveToNext());
-        return arrayList;
-    }
-
-    public ArrayList<MatchInfo> getAllMatches() {
-        return getMatches(null, null);
-
     }
 }

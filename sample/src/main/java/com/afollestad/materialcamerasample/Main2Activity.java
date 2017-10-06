@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -50,6 +49,7 @@ public class Main2Activity extends AppCompatActivity {
     TextView tvFileData;
     DBHelper myDBHelper;
     String myUpdate;
+    File filesFromDir;
     VideoPlayerManager<MetaData> videoPlayerManager = new SingleVideoPlayerManager(new PlayerItemChangeListener() {
         @Override
         public void onPlayerItemChanged(MetaData metaData) {
@@ -108,6 +108,8 @@ public class Main2Activity extends AppCompatActivity {
 
         //First Button should record.
         btnPlay.setText(TEXT_RECORD);
+        btnPlay.setVisibility(View.GONE);
+        //btnPlay.setEnabled(false);
 
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         broadcastManager.registerReceiver(recordingStartReceiver, new IntentFilter("START_RECORDING"));
@@ -141,17 +143,12 @@ public class Main2Activity extends AppCompatActivity {
         }
 
 
-        /*for (int i = 0; i < saveFolder.listFiles().length; i++) {
-            File f = saveFolder.listFiles()[i];
-            videoList1.add(ItemFactory.createItemFromDir(f.getAbsolutePath(), Main2Activity.this, videoPlayerManager, R.mipmap.ic_launcher, String.valueOf(myDBHelper.getMatches())));
-//            Log.e("File", "FileName    :" + arrayList.get(i)+" "+i);
-        }*/
-
         ArrayList<MatchInfo> matches = myDBHelper.getAllMatches();
+
         for (MatchInfo info : matches) {
+            //Log.e("Matches",filesFromDir.getAbsolutePath()+ "____equals____" + info.getVideoUrl());
             videoList1.add(ItemFactory.createItemFromDir(info.getVideoUrl(), this, videoPlayerManager, R.mipmap.ic_launcher, info.toString()));
         }
-
 
         materialCamera = new MaterialCamera(this);                               // Constructor takes an Activity
         materialCamera.allowRetry(true)                                  // Whether or not 'Retry' is visible during playback
