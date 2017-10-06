@@ -50,16 +50,8 @@ public class AssetVideoItem extends BaseVideoItem {
 
         viewHolder.fileName.setText(mTitle);
         viewHolder.fileName.setVisibility(View.VISIBLE);
-        viewHolder.imageView.setVisibility(View.VISIBLE);
-        mImageLoader.load(mImageResource).into(viewHolder.imageView);
-
-//        viewHolder.videoStatus.setText(new MyFirebaseMessagingService().fcmData);
-//        viewHolder.videoStatus.setVisibility(View.VISIBLE);
-
-        viewHolder.fileName.setText(mTitle);
-        viewHolder.fileName.setVisibility(View.VISIBLE);
-        viewHolder.imageView.setVisibility(View.VISIBLE);
-        mImageLoader.load(mImageResource).into(viewHolder.imageView);
+        //viewHolder.imageView.setVisibility(View.VISIBLE);
+        //mImageLoader.load(mImageResource).into(viewHolder.imageView);
         viewHolder.videoStatus.setText(myUpdatedValue);
         viewHolder.videoStatus.setVisibility(View.VISIBLE);
     }

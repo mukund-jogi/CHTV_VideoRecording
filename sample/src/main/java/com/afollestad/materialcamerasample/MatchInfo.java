@@ -3,6 +3,8 @@ package com.afollestad.materialcamerasample;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import org.json.JSONObject;
+
 import java.util.Locale;
 
 /**
@@ -83,5 +85,15 @@ public class MatchInfo {
     @Override
     public int hashCode() {
         return toString().hashCode();
+    }
+
+    public static MatchInfo fromJson(JSONObject jsonMatchInfo) {
+        // {"match_id":17316,"team_a":"Team Rogger","team_b":"Dev5","score":"9\/0","over":"3","batting_team":"Team Rogger","command":"START_OVER"}
+        MatchInfo info = new MatchInfo();
+        info.matchId = jsonMatchInfo.optString("match_id", "0");
+        info.over = jsonMatchInfo.optString("over", "0");
+        info.videoUrl = "";
+        info.syncStatus = "Local";
+        return info;
     }
 }

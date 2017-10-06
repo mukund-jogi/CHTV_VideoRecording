@@ -13,6 +13,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.MediaController;
@@ -41,9 +42,13 @@ import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
+
+import static android.R.attr.handle;
 
 public class Main2Activity extends AppCompatActivity {
 
@@ -68,7 +73,7 @@ public class Main2Activity extends AppCompatActivity {
     private Button btnPlay;
     private String server_Match_Id, server_Over;
     String sync_Status = "Local";
-    BroadcastReceiver recordingStartReceiver = new BroadcastReceiver() {
+    /*BroadcastReceiver recordingStartReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -79,24 +84,27 @@ public class Main2Activity extends AppCompatActivity {
                 btnPlay.performClick();
             }
         }
-    };
+    };*/
     private MaterialCamera materialCamera;
     private int mScrollState = AbsListView.OnScrollListener.SCROLL_STATE_IDLE;
     private LinearLayoutManager mLayoutManager;
     private ItemsPositionGetter mItemsPositionGetter;
 
     // MQTT
-    final String subscriptionTopicStartOver = "start_over";
-    final String subscriptionTopicEndOver = "end_over";
-    final String serverUri = "ws://broker.hivemq.com:8000";
+    final String subscriptionTopic = "chtv";
+    final String serverUri = "ws://cricheroes.in:1884";
+//    final String serverUri = "ws://192.168.2.16:1884";
+//    final String serverUri = "tcp://broker.hivemq.com:1883";
+//    final String serverUri = "ws://broker.hivemq.com:8000";
     MqttAndroidClient mqttAndroidClient;
-    String clientId = "CHTv";
+    String clientId = "chtv";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+
         setupControls();
         mqttImplementation();
     }
@@ -125,8 +133,8 @@ public class Main2Activity extends AppCompatActivity {
         btnPlay.setVisibility(View.GONE);
         //btnPlay.setEnabled(false);
 
-        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
-        broadcastManager.registerReceiver(recordingStartReceiver, new IntentFilter("START_RECORDING"));
+        /*LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.registerReceiver(recordingStartReceiver, new IntentFilter("START_RECORDING"));*/
 
 
         btnPlay.setOnClickListener(new View.OnClickListener() {
@@ -229,6 +237,7 @@ public class Main2Activity extends AppCompatActivity {
 
     private void mqttImplementation() {
         clientId = clientId + System.currentTimeMillis();
+        addToHistory("MQTT ClientId: " + clientId);
         mqttAndroidClient = new MqttAndroidClient(this, serverUri, clientId);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
@@ -293,16 +302,14 @@ public class Main2Activity extends AppCompatActivity {
         }
 
     }
+
     private void addToHistory(String mainText){
         System.out.println("LOG: " + mainText);
-
-//        Snackbar.make(findViewById(android.R.id.content), mainText, Snackbar.LENGTH_LONG)
-//                .setAction("Action", null).show();
-
     }
+
     public void subscribeToTopic(){
         try {
-            mqttAndroidClient.subscribe(subscriptionTopicStartOver, 0, null, new IMqttActionListener() {
+            mqttAndroidClient.subscribe(subscriptionTopic, 0, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     addToHistory("Subscribed!");
@@ -315,17 +322,41 @@ public class Main2Activity extends AppCompatActivity {
             });
 
             // THIS DOES NOT WORK!
-            mqttAndroidClient.subscribe(subscriptionTopicStartOver, 0, new IMqttMessageListener() {
+            mqttAndroidClient.subscribe(subscriptionTopic, 0, new IMqttMessageListener() {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     // message Arrived!
-                    System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
+                    addToHistory("Message: " + new String(message.getPayload()));
+                    //System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
+                    handleMqttMessage(message);
                 }
             });
 
         } catch (MqttException ex){
             System.err.println("Exception whilst subscribing");
             ex.printStackTrace();
+        }
+    }
+
+    private MatchInfo mMatchInfo;
+    private void handleMqttMessage(MqttMessage message) {
+        try {
+            JSONObject jsonMatchInfo = new JSONObject(new String(message.getPayload()));
+            String command = jsonMatchInfo.optString("command", "");
+            mMatchInfo = MatchInfo.fromJson(jsonMatchInfo);
+
+            if (command.equalsIgnoreCase("START_OVER")) {
+                addToHistory("Start over: " + jsonMatchInfo);
+                materialCamera.start(CAMERA_RQ);
+            } else {
+                addToHistory("End over: " + jsonMatchInfo);
+                Intent intent = new Intent("STOP_RECORDING");
+                LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
+                localBroadcastManager.sendBroadcast(intent);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -366,11 +397,17 @@ public class Main2Activity extends AppCompatActivity {
                 //https://github.com/eneim/toro
                 btnPlay.setVisibility(View.GONE);
 
-                myDBHelper.insertMatchInfo(new MatchInfo(server_Match_Id,server_Over,newVideoPath,sync_Status));
+                // Message received > STOP_RECORDING Broadcase > onActivityResult of video recording
+                if (mMatchInfo == null) {
+                    mMatchInfo = new MatchInfo("0", "0", "", "");
+                }
+                mMatchInfo.setVideoUrl(newVideoPath);
+                mMatchInfo.setSyncStatus(sync_Status);
+                myDBHelper.insertMatchInfo(mMatchInfo);
                 Log.e("Matches", String.valueOf(myDBHelper.getMatchesByStatus(sync_Status)));
                 recyclerView.setVisibility(View.VISIBLE);
 
-                videoList1.add(0, ItemFactory.createItemFromDir(newVideoPath, this, videoPlayerManager, R.mipmap.ic_launcher, String.valueOf(myDBHelper.getMatchesByMatchIdAndOver(server_Match_Id,server_Over))));
+                videoList1.add(0, ItemFactory.createItemFromDir(newVideoPath, this, videoPlayerManager, R.mipmap.ic_launcher, mMatchInfo.toString()));
                 recyclerView.getAdapter().notifyDataSetChanged();
 
             } else if (data != null) {
