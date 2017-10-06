@@ -88,7 +88,7 @@ public class Main2Activity extends AppCompatActivity {
     // MQTT
     final String subscriptionTopicStartOver = "start_over";
     final String subscriptionTopicEndOver = "end_over";
-    final String serverUri = "broker.hivemq.com:8000";
+    final String serverUri = "ws://broker.hivemq.com:8000";
     MqttAndroidClient mqttAndroidClient;
     String clientId = "CHTv";
 
