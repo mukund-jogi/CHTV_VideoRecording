@@ -1,20 +1,23 @@
 package com.afollestad.materialcamerasample;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.Manifest;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.MediaController;
 import android.widget.TextView;
@@ -47,8 +50,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
-
-import static android.R.attr.handle;
+import java.util.List;
 
 public class Main2Activity extends AppCompatActivity {
 
@@ -92,12 +94,19 @@ public class Main2Activity extends AppCompatActivity {
 
     // MQTT
     final String subscriptionTopic = "chtv";
-    final String serverUri = "ws://cricheroes.in:1884";
+//    final String serverUri = "ws://cricheroes.in:1884";
 //    final String serverUri = "ws://192.168.2.16:1884";
 //    final String serverUri = "tcp://broker.hivemq.com:1883";
-//    final String serverUri = "ws://broker.hivemq.com:8000";
+    final String serverUri = "ws://broker.hivemq.com:8000";
+
     MqttAndroidClient mqttAndroidClient;
     String clientId = "chtv";
+
+    //Spinner
+    private AppCompatSpinner spVideo_Quality,spVideo_Bitrate;
+    private List<VideoQuailtyList> selectVideoQuality;
+    private List<VideoBitrateList> selectVideoBitrate;
+    private int newVideoQuality = 0,newBitrate = 1000000;
 
 
     @Override
@@ -105,11 +114,67 @@ public class Main2Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
 
+        //To grant permissions
+        isStoragePermissionGranted();
         setupControls();
         mqttImplementation();
     }
 
     private void setupControls() {
+
+        //Toolbar view
+        Toolbar toolbar = (Toolbar) findViewById(R.id.customToolbar);
+        spVideo_Quality = (AppCompatSpinner) findViewById(R.id.spinner_ListQuality);
+        spVideo_Bitrate = (AppCompatSpinner) findViewById(R.id.spinner_ListBitrate);
+        setSupportActionBar(toolbar);
+
+        selectVideoQuality = new ArrayList<>();
+        selectVideoQuality.add(new VideoQuailtyList("Low_Quality",0));
+        selectVideoQuality.add(new VideoQuailtyList("High_Quality",1));
+        selectVideoQuality.add(new VideoQuailtyList("480p",4));
+        selectVideoQuality.add(new VideoQuailtyList("720p",5));
+
+        ArrayAdapter qualityAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item, selectVideoQuality);
+        qualityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spVideo_Quality.setAdapter(qualityAdapter);
+        spVideo_Quality.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                newVideoQuality = selectVideoQuality.get(i).getVideoQuality();
+                setVideoQuality(newVideoQuality);
+                Log.e("Quality:", String.valueOf(newVideoQuality));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+
+        selectVideoBitrate = new ArrayList<>();
+        selectVideoBitrate.add(new VideoBitrateList("1000000",1000000));
+        selectVideoBitrate.add(new VideoBitrateList("2048000",2048000));
+        selectVideoBitrate.add(new VideoBitrateList("2500000",2500000));
+        selectVideoBitrate.add(new VideoBitrateList("5000000",5000000));
+
+        ArrayAdapter bitrateAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item, selectVideoBitrate);
+        bitrateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spVideo_Bitrate.setAdapter(bitrateAdapter);
+        spVideo_Bitrate.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                newBitrate = selectVideoBitrate.get(i).getVideoBitrate();
+                setVideoBitrate(newBitrate);
+                Log.e("Bitrate:", String.valueOf(newBitrate));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
 
         myDBHelper = new DBHelper(Main2Activity.this);
 
@@ -169,6 +234,8 @@ public class Main2Activity extends AppCompatActivity {
 
         for (MatchInfo info : matches) {
             //Log.e("Matches",filesFromDir.getAbsolutePath()+ "____equals____" + info.getVideoUrl());
+
+
             videoList1.add(ItemFactory.createItemFromDir(info.getVideoUrl(), this, videoPlayerManager, R.mipmap.ic_launcher, info.toString()));
         }
 
@@ -192,8 +259,7 @@ public class Main2Activity extends AppCompatActivity {
                 .labelRetry(R.string.mcam_retry)                   // Sets a custom button label for the button used to retry recording, when available
                 .labelConfirm(R.string.mcam_use_video)             // Sets a custom button label for the button used to confirm/submit a recording
                 .audioDisabled(true)                               // Set to true to record video without any audio.
-                .autoRecordWithDelaySec(1)
-                .videoEncodingBitRate(1000000);
+                .autoRecordWithDelaySec(1);
 //                .start(CAMERA_RQ);
 
 //        autoStop();
@@ -235,6 +301,27 @@ public class Main2Activity extends AppCompatActivity {
         });
     }
 
+    private void setVideoBitrate(int newBitrate) {
+        Log.e("BitrateId:", String.valueOf(newBitrate));
+        materialCamera.videoEncodingBitRate(newBitrate);
+    }
+
+    private void setVideoQuality(int videoQuality) {
+        Log.e("QualityId:", String.valueOf(videoQuality));
+
+        /*switch (videoQuality) {
+            case MaterialCamera.QUALITY_480P:
+                bitRate = 2500000;
+                break;
+            case MaterialCamera.QUALITY_720P:
+                bitRate = 5000000;
+                break;
+
+        }*/
+        materialCamera.qualityProfile(videoQuality);
+        //Log.e("Video","Bit Rate: " + bitRate);
+    }
+
     private void mqttImplementation() {
         clientId = clientId + System.currentTimeMillis();
         addToHistory("MQTT ClientId: " + clientId);
@@ -249,8 +336,6 @@ public class Main2Activity extends AppCompatActivity {
                 }else {
                     addToHistory("Connected to: " + serverUri);
                 }
-
-
             }
 
             @Override
@@ -427,6 +512,25 @@ public class Main2Activity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         videoView.stopPlayback();
+    }
+
+    public  boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v("Permission","Permission is granted");
+                return true;
+            } else {
+
+                Log.v("Permission","Permission is revoked");
+                android.support.v13.app.ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v("Permission","Permission is granted");
+            return true;
+        }
     }
 }
 

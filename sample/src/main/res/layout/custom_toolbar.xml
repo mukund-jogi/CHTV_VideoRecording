@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/customToolbar"
+    android:layout_width="match_parent"
+    android:layout_height="?actionBarSize"
+    android:background="@color/mcam_color_light"
+    android:elevation="4dp"
+    app:contentInsetEnd="0dp"
+    app:contentInsetStart="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:layout_width="180dp"
+            android:layout_height="match_parent"
+            android:id="@+id/spinner_ListQuality">
+        </android.support.v7.widget.AppCompatSpinner>
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:layout_width="180dp"
+            android:layout_height="match_parent"
+            android:id="@+id/spinner_ListBitrate">
+        </android.support.v7.widget.AppCompatSpinner>
+
+    </LinearLayout>
+
+</android.support.v7.widget.Toolbar>

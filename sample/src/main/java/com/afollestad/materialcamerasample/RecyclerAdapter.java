@@ -14,6 +14,7 @@ import java.util.List;
  * Created by mukund.jogi on 29/9/17.
  */
 
+
 class RecyclerAdapter extends RecyclerView.Adapter<VideoListing>{
 
     private final VideoPlayerManager mVideoPlayerManager;
