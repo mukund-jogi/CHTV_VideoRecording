@@ -7,6 +7,7 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
@@ -94,10 +95,10 @@ public class Main2Activity extends AppCompatActivity {
 
     // MQTT
     final String subscriptionTopic = "chtv";
-//    final String serverUri = "ws://cricheroes.in:1884";
+    final String serverUri = "ws://cricheroes.in:1884";
 //    final String serverUri = "ws://192.168.2.16:1884";
 //    final String serverUri = "tcp://broker.hivemq.com:1883";
-    final String serverUri = "ws://broker.hivemq.com:8000";
+//    final String serverUri = "ws://broker.hivemq.com:8000";
 
     MqttAndroidClient mqttAndroidClient;
     String clientId = "chtv";
@@ -116,11 +117,17 @@ public class Main2Activity extends AppCompatActivity {
 
         //To grant permissions
         isStoragePermissionGranted();
+
+
+
         setupControls();
         mqttImplementation();
     }
 
     private void setupControls() {
+
+
+
 
         //Toolbar view
         Toolbar toolbar = (Toolbar) findViewById(R.id.customToolbar);
@@ -128,53 +135,8 @@ public class Main2Activity extends AppCompatActivity {
         spVideo_Bitrate = (AppCompatSpinner) findViewById(R.id.spinner_ListBitrate);
         setSupportActionBar(toolbar);
 
-        selectVideoQuality = new ArrayList<>();
-        selectVideoQuality.add(new VideoQuailtyList("Low_Quality",0));
-        selectVideoQuality.add(new VideoQuailtyList("High_Quality",1));
-        selectVideoQuality.add(new VideoQuailtyList("480p",4));
-        selectVideoQuality.add(new VideoQuailtyList("720p",5));
-
-        ArrayAdapter qualityAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item, selectVideoQuality);
-        qualityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spVideo_Quality.setAdapter(qualityAdapter);
-        spVideo_Quality.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                newVideoQuality = selectVideoQuality.get(i).getVideoQuality();
-                setVideoQuality(newVideoQuality);
-                Log.e("Quality:", String.valueOf(newVideoQuality));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-
-        selectVideoBitrate = new ArrayList<>();
-        selectVideoBitrate.add(new VideoBitrateList("1000000",1000000));
-        selectVideoBitrate.add(new VideoBitrateList("2048000",2048000));
-        selectVideoBitrate.add(new VideoBitrateList("2500000",2500000));
-        selectVideoBitrate.add(new VideoBitrateList("5000000",5000000));
-
-        ArrayAdapter bitrateAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item, selectVideoBitrate);
-        bitrateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spVideo_Bitrate.setAdapter(bitrateAdapter);
-        spVideo_Bitrate.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                newBitrate = selectVideoBitrate.get(i).getVideoBitrate();
-                setVideoBitrate(newBitrate);
-                Log.e("Bitrate:", String.valueOf(newBitrate));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
+        setVideoQuality();
+        setVideoBitrate();
 
         myDBHelper = new DBHelper(Main2Activity.this);
 
@@ -234,8 +196,6 @@ public class Main2Activity extends AppCompatActivity {
 
         for (MatchInfo info : matches) {
             //Log.e("Matches",filesFromDir.getAbsolutePath()+ "____equals____" + info.getVideoUrl());
-
-
             videoList1.add(ItemFactory.createItemFromDir(info.getVideoUrl(), this, videoPlayerManager, R.mipmap.ic_launcher, info.toString()));
         }
 
@@ -301,25 +261,65 @@ public class Main2Activity extends AppCompatActivity {
         });
     }
 
-    private void setVideoBitrate(int newBitrate) {
+    private void setVideoQuality() {
+        selectVideoQuality = new ArrayList<>();
+        selectVideoQuality.add(new VideoQuailtyList("Low_Quality",0));
+        selectVideoQuality.add(new VideoQuailtyList("High_Quality",1));
+        selectVideoQuality.add(new VideoQuailtyList("480p",4));
+        selectVideoQuality.add(new VideoQuailtyList("720p",5));
+
+        ArrayAdapter qualityAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item, selectVideoQuality);
+        qualityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spVideo_Quality.setAdapter(qualityAdapter);
+        spVideo_Quality.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                newVideoQuality = selectVideoQuality.get(i).getVideoQuality();
+                setNewVideoQuality(newVideoQuality);
+                Log.e("Quality:", String.valueOf(newVideoQuality));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+    }
+
+    private void setVideoBitrate() {
+        selectVideoBitrate = new ArrayList<>();
+        selectVideoBitrate.add(new VideoBitrateList("1000000",1000000));
+        selectVideoBitrate.add(new VideoBitrateList("2048000",2048000));
+        selectVideoBitrate.add(new VideoBitrateList("2500000",2500000));
+        selectVideoBitrate.add(new VideoBitrateList("5000000",5000000));
+
+        ArrayAdapter bitrateAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item, selectVideoBitrate);
+        bitrateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spVideo_Bitrate.setAdapter(bitrateAdapter);
+        spVideo_Bitrate.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                newBitrate = selectVideoBitrate.get(i).getVideoBitrate();
+                setNewVideoBitrate(newBitrate);
+                Log.e("Bitrate:", String.valueOf(newBitrate));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+    }
+
+    private void setNewVideoBitrate(int newBitrate) {
         Log.e("BitrateId:", String.valueOf(newBitrate));
         materialCamera.videoEncodingBitRate(newBitrate);
     }
 
-    private void setVideoQuality(int videoQuality) {
+    private void setNewVideoQuality(int videoQuality) {
         Log.e("QualityId:", String.valueOf(videoQuality));
-
-        /*switch (videoQuality) {
-            case MaterialCamera.QUALITY_480P:
-                bitRate = 2500000;
-                break;
-            case MaterialCamera.QUALITY_720P:
-                bitRate = 5000000;
-                break;
-
-        }*/
         materialCamera.qualityProfile(videoQuality);
-        //Log.e("Video","Bit Rate: " + bitRate);
     }
 
     private void mqttImplementation() {
@@ -516,14 +516,15 @@ public class Main2Activity extends AppCompatActivity {
 
     public  boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if ((checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(this,android.Manifest.permission.CAMERA)
+                    == PackageManager.PERMISSION_GRANTED) ) {
                 Log.v("Permission","Permission is granted");
                 return true;
             } else {
 
                 Log.v("Permission","Permission is revoked");
-                android.support.v13.app.ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                android.support.v13.app.ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,android.Manifest.permission.CAMERA}, 1);
                 return false;
             }
         }
@@ -532,5 +533,7 @@ public class Main2Activity extends AppCompatActivity {
             return true;
         }
     }
+
+
 }
 
