@@ -25,6 +25,8 @@ public class CameraUtil {
 
   private CameraUtil() {}
 
+  public static String videoPrefix = "";
+
   public static boolean isChromium() {
     return Build.BRAND.equalsIgnoreCase("chromium")
         && Build.MANUFACTURER.equalsIgnoreCase("chromium");
@@ -47,13 +49,28 @@ public class CameraUtil {
         new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
     final File dir = new File(saveDir);
     dir.mkdirs();
-    return new File(dir, prefix + timeStamp + extension);
+    return new File(dir, prefix + (videoPrefix == "" ? timeStamp : videoPrefix) + extension);
   }
+
+
+
+//  @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
+//  public static File makeTempFile(
+//          @NonNull Context context, @Nullable String saveDir, String prefix, String extension) {
+//    if (saveDir == null) saveDir = context.getExternalCacheDir().getAbsolutePath();
+//    final String timeStamp =
+//            new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+//    final File dir = new File(saveDir);
+//    dir.mkdirs();
+//    return new File(dir, prefix + timeStamp + extension);
+//  }
 
   public static boolean hasCamera(Context context) {
     return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)
         || context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT);
   }
+
+
 
   public static List<Integer> getSupportedFlashModes(
       Context context, Camera.Parameters parameters) {

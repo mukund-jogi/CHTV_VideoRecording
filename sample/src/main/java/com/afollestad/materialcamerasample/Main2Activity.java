@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.afollestad.materialcamera.MaterialCamera;
+import com.afollestad.materialcamera.util.CameraUtil;
 import com.volokh.danylo.video_player_manager.manager.PlayerItemChangeListener;
 import com.volokh.danylo.video_player_manager.manager.SingleVideoPlayerManager;
 import com.volokh.danylo.video_player_manager.manager.VideoPlayerManager;
@@ -95,10 +97,10 @@ public class Main2Activity extends AppCompatActivity {
 
     // MQTT
     final String subscriptionTopic = "chtv";
-    final String serverUri = "ws://cricheroes.in:1884";
+//    final String serverUri = "ws://cricheroes.in:1884";
 //    final String serverUri = "ws://192.168.2.16:1884";
 //    final String serverUri = "tcp://broker.hivemq.com:1883";
-//    final String serverUri = "ws://broker.hivemq.com:8000";
+    final String serverUri = "ws://broker.hivemq.com:8000";
 
     MqttAndroidClient mqttAndroidClient;
     String clientId = "chtv";
@@ -191,12 +193,14 @@ public class Main2Activity extends AppCompatActivity {
             saveFolder.mkdir();
         }
 
-
         ArrayList<MatchInfo> matches = myDBHelper.getAllMatches();
 
         for (MatchInfo info : matches) {
-            //Log.e("Matches",filesFromDir.getAbsolutePath()+ "____equals____" + info.getVideoUrl());
-            videoList1.add(ItemFactory.createItemFromDir(info.getVideoUrl(), this, videoPlayerManager, R.mipmap.ic_launcher, info.toString()));
+            if(new File(info.getVideoUrl()).exists())
+            {
+                Log.e("File","Exists....");
+                videoList1.add(ItemFactory.createItemFromDir(info.getVideoUrl(), this, videoPlayerManager, R.mipmap.ic_launcher, info.toString()));
+            }
         }
 
         materialCamera = new MaterialCamera(this);                               // Constructor takes an Activity
@@ -432,6 +436,7 @@ public class Main2Activity extends AppCompatActivity {
 
             if (command.equalsIgnoreCase("START_OVER")) {
                 addToHistory("Start over: " + jsonMatchInfo);
+                CameraUtil.videoPrefix = "M_ID-"+mMatchInfo.getMatchId()+"_"+"OVER-"+mMatchInfo.getOver();
                 materialCamera.start(CAMERA_RQ);
             } else {
                 addToHistory("End over: " + jsonMatchInfo);
@@ -475,8 +480,10 @@ public class Main2Activity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 imageId = 0;
 
-                String newVideoPath = String.valueOf(data.getData());
+                String newVideoPath = String.valueOf(data.getData().getEncodedPath());
+//                newVideoPath.startsWith(mMatchInfo.getMatchId()+":"+mMatchInfo.getOver());
                 Log.i("tag", "DATA:" + newVideoPath);
+
                 //https://medium.com/@v.danylo/implementing-video-playback-in-a-scrolled-list-listview-recyclerview-d04bc2148429
                 //https://github.com/danylovolokh/VideoPlayerManager
                 //https://github.com/eneim/toro
@@ -486,7 +493,7 @@ public class Main2Activity extends AppCompatActivity {
                 if (mMatchInfo == null) {
                     mMatchInfo = new MatchInfo("0", "0", "", "");
                 }
-                mMatchInfo.setVideoUrl(newVideoPath);
+                mMatchInfo.setVideoUrl(String.valueOf(newVideoPath));
                 mMatchInfo.setSyncStatus(sync_Status);
                 myDBHelper.insertMatchInfo(mMatchInfo);
                 Log.e("Matches", String.valueOf(myDBHelper.getMatchesByStatus(sync_Status)));
@@ -514,6 +521,7 @@ public class Main2Activity extends AppCompatActivity {
         videoView.stopPlayback();
     }
 
+    //Request Permissions for 6.0 and above
     public  boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if ((checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)

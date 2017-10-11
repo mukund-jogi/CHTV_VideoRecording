@@ -16,6 +16,9 @@ public class MatchInfo {
     private String over;
     private String videoUrl;
     private String syncStatus;
+    private String teamAName;
+    private String teamBName;
+    private String score;
 
     public MatchInfo() {
     }
@@ -25,6 +28,7 @@ public class MatchInfo {
         this.over = over;
         this.videoUrl = videoUrl;
         this.syncStatus = syncStatus;
+
     }
 
     public static MatchInfo fromCursor(Cursor cursor) {
@@ -79,7 +83,7 @@ public class MatchInfo {
 
     @Override
     public String toString() {
-        return String.format(Locale.getDefault(), "{match_id: %s, over: %s, video_url: %s, sync_status: %s}", matchId, over, videoUrl, syncStatus);
+        return String.format(Locale.getDefault(), "Match_id: %s \nOver: %s \nVideo_url: %s \nSync_status: %s", matchId, over, videoUrl, syncStatus);
     }
 
     @Override

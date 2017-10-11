@@ -87,6 +87,7 @@ abstract class BaseCameraFragment extends Fragment
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equalsIgnoreCase("STOP_RECORDING")) {
+                CameraUtil.videoPrefix = "";
                 stopRecordingVideo(true);
 //        intent.putExtras(intent.getExtras());
             }
