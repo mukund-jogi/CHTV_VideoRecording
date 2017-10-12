@@ -196,6 +196,7 @@ public class Main2Activity extends AppCompatActivity {
         ArrayList<MatchInfo> matches = myDBHelper.getAllMatches();
 
         for (MatchInfo info : matches) {
+            Log.e("tag", info.getVideoUrl());
             if(new File(info.getVideoUrl()).exists())
             {
                 Log.e("File","Exists....");
@@ -288,7 +289,6 @@ public class Main2Activity extends AppCompatActivity {
 
             }
         });
-
     }
 
     private void setVideoBitrate() {
@@ -483,15 +483,12 @@ public class Main2Activity extends AppCompatActivity {
                 String newVideoPath = String.valueOf(data.getData().getEncodedPath());
 //                newVideoPath.startsWith(mMatchInfo.getMatchId()+":"+mMatchInfo.getOver());
                 Log.i("tag", "DATA:" + newVideoPath);
-
-                //https://medium.com/@v.danylo/implementing-video-playback-in-a-scrolled-list-listview-recyclerview-d04bc2148429
-                //https://github.com/danylovolokh/VideoPlayerManager
-                //https://github.com/eneim/toro
                 btnPlay.setVisibility(View.GONE);
 
+                // {"match_id":17316,"team_a":"Team Rogger","team_b":"Dev5","score":"9\/0","over":"3","batting_team":"Team Rogger","command":"START_OVER"}
                 // Message received > STOP_RECORDING Broadcase > onActivityResult of video recording
                 if (mMatchInfo == null) {
-                    mMatchInfo = new MatchInfo("0", "0", "", "");
+                    mMatchInfo = new MatchInfo("0", "0", "0", "0","0","0", "0","0");
                 }
                 mMatchInfo.setVideoUrl(String.valueOf(newVideoPath));
                 mMatchInfo.setSyncStatus(sync_Status);
@@ -541,7 +538,8 @@ public class Main2Activity extends AppCompatActivity {
             return true;
         }
     }
-
-
 }
 
+//https://medium.com/@v.danylo/implementing-video-playback-in-a-scrolled-list-listview-recyclerview-d04bc2148429
+//https://github.com/danylovolokh/VideoPlayerManager
+//https://github.com/eneim/toro

@@ -40,9 +40,13 @@ class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL("create table match_info" +
                 "( match_id text , " +
-                "over text , " +
                 "video_url text, " +
                 "sync_status text, " +
+                "over text, " +
+                "team_a text, " +
+                "team_b text, " +
+                "batting_team text, " +
+                "score text, " +
                 "primary key(match_id , over))");
     }
 
