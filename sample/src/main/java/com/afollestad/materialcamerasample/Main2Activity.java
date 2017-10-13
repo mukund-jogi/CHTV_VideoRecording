@@ -96,11 +96,11 @@ public class Main2Activity extends AppCompatActivity {
     private ItemsPositionGetter mItemsPositionGetter;
 
     // MQTT
-    final String subscriptionTopic = "chtv";
-//    final String serverUri = "ws://cricheroes.in:1884";
+    final String subscriptionTopic = "chtv-7";
+    final String serverUri = "ws://cricheroes.in:1884";
 //    final String serverUri = "ws://192.168.2.16:1884";
 //    final String serverUri = "tcp://broker.hivemq.com:1883";
-    final String serverUri = "ws://broker.hivemq.com:8000";
+//    final String serverUri = "ws://broker.hivemq.com:8000";
 
     MqttAndroidClient mqttAndroidClient;
     String clientId = "chtv";
@@ -109,7 +109,7 @@ public class Main2Activity extends AppCompatActivity {
     private AppCompatSpinner spVideo_Quality,spVideo_Bitrate;
     private List<VideoQuailtyList> selectVideoQuality;
     private List<VideoBitrateList> selectVideoBitrate;
-    private int newVideoQuality = 0,newBitrate = 1000000;
+    private int newVideoQuality = 1, newBitrate = 0;
 
 
     @Override
@@ -120,16 +120,11 @@ public class Main2Activity extends AppCompatActivity {
         //To grant permissions
         isStoragePermissionGranted();
 
-
-
         setupControls();
         mqttImplementation();
     }
 
     private void setupControls() {
-
-
-
 
         //Toolbar view
         Toolbar toolbar = (Toolbar) findViewById(R.id.customToolbar);
@@ -268,7 +263,6 @@ public class Main2Activity extends AppCompatActivity {
 
     private void setVideoQuality() {
         selectVideoQuality = new ArrayList<>();
-        selectVideoQuality.add(new VideoQuailtyList("Low_Quality",0));
         selectVideoQuality.add(new VideoQuailtyList("High_Quality",1));
         selectVideoQuality.add(new VideoQuailtyList("480p",4));
         selectVideoQuality.add(new VideoQuailtyList("720p",5));
@@ -293,6 +287,7 @@ public class Main2Activity extends AppCompatActivity {
 
     private void setVideoBitrate() {
         selectVideoBitrate = new ArrayList<>();
+        selectVideoBitrate.add(new VideoBitrateList("No_Bitrate",0));
         selectVideoBitrate.add(new VideoBitrateList("1000000",1000000));
         selectVideoBitrate.add(new VideoBitrateList("2048000",2048000));
         selectVideoBitrate.add(new VideoBitrateList("2500000",2500000));
@@ -376,12 +371,14 @@ public class Main2Activity extends AppCompatActivity {
                     disconnectedBufferOptions.setPersistBuffer(false);
                     disconnectedBufferOptions.setDeleteOldestMessages(false);
                     mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
+                    Toast.makeText(Main2Activity.this, "MQTT connected", Toast.LENGTH_SHORT).show();
                     subscribeToTopic();
                 }
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                     addToHistory("Failed to connect to: " + serverUri);
+                    Toast.makeText(Main2Activity.this, "MQTT not connected", Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -402,6 +399,7 @@ public class Main2Activity extends AppCompatActivity {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     addToHistory("Subscribed!");
+                    Log.v("SubscribedTo:Topic::",subscriptionTopic);
                 }
 
                 @Override
@@ -444,7 +442,6 @@ public class Main2Activity extends AppCompatActivity {
                 LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
                 localBroadcastManager.sendBroadcast(intent);
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
